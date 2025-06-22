@@ -73,18 +73,10 @@ export function useVariableExpense() {
     const to = realm.objectForPrimaryKey("VariableExpense", data.to);
     if (!from || !to) return;
 
-    const fromBefore = from.spent;
-    const toBefore = to.spent;
-
     realm.write(() => {
       from.spent += data.amount;
       to.spent -= data.amount;
     });
-
-    console.log(`[Money Transfer]`);
-    console.log(`→ Moved $${data.amount} from "${from.name}" to "${to.name}"`);
-    console.log(`→ From "${from.name}": ${fromBefore} → ${from.spent}`);
-    console.log(`→ To   "${to.name}": ${toBefore} → ${to.spent}`);
   };
 
   return {
