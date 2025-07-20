@@ -1,5 +1,6 @@
 import PageView from "@/components/PageView";
 import { ThemedText } from "@/components/ThemedText";
+import EnterVEModal from '@/components/modal/EnterVEModal';
 import FinancialInput from '@/components/settings/FinancialInput';
 import VECategoryItem from '@/components/settings/VECategoryItem';
 import Icon from '@/components/ui/Icon';
@@ -9,7 +10,7 @@ import { useSettings } from '@/hooks/useSettings';
 import { useSnackbar } from '@/hooks/useSnackbar';
 import { router } from 'expo-router';
 import React, { useState } from 'react';
-import { ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 export default function FinancialInfoScreen() {
   const {
@@ -24,9 +25,7 @@ export default function FinancialInfoScreen() {
   const { showSnackbar } = useSnackbar();
   const { formatAmount } = useCurrency();
 
-  const [showAddForm, setShowAddForm] = useState(false);
-  const [newCategoryName, setNewCategoryName] = useState('');
-  const [newCategoryLimit, setNewCategoryLimit] = useState('');
+  const [showVEModal, setShowVEModal] = useState(false);
   const [settings, setSettings] = useState(() => getSettings());
 
   // Force refresh after settings changes
@@ -37,19 +36,10 @@ export default function FinancialInfoScreen() {
     return a.name.localeCompare(b.name);
   });
 
-  const handleAddCategory = () => {
-    const limit = parseFloat(newCategoryLimit) || 0;
-    if (newCategoryName.trim() && limit > 0) {
-      const categoryName = newCategoryName.trim();
-      addVECategory(categoryName, limit);
-      setNewCategoryName('');
-      setNewCategoryLimit('');
-      setShowAddForm(false);
-      forceRefresh();
-      showSnackbar(`Added category "${categoryName}"`, 'success');
-    } else {
-      showSnackbar('Please enter a valid category name and budget amount', 'error');
-    }
+  const handleAddCategory = (name: string, limit: number) => {
+    addVECategory(name, limit);
+    forceRefresh();
+    showSnackbar(`Added category "${name}"`, 'success');
   };
 
   const activeBudgetTotal = (settings.veCategories || [])
@@ -107,49 +97,11 @@ export default function FinancialInfoScreen() {
             </ThemedText>
             <TouchableOpacity 
               style={styles.addButton}
-              onPress={() => setShowAddForm(true)}
+              onPress={() => setShowVEModal(true)}
             >
               <Icon name="add" size={20} />
             </TouchableOpacity>
           </View>
-
-          {showAddForm && (
-            <View style={styles.addForm}>
-              <TextInput
-                style={styles.addInput}
-                value={newCategoryName}
-                onChangeText={setNewCategoryName}
-                placeholder="Category name (e.g., Groceries)"
-                placeholderTextColor="#888"
-              />
-              <TextInput
-                style={styles.addInput}
-                value={newCategoryLimit}
-                onChangeText={(text) => setNewCategoryLimit(text.replace(/[^0-9.]/g, ''))}
-                placeholder={`Monthly budget (e.g., ${formatAmount(400)})`}
-                placeholderTextColor="#888"
-                keyboardType="decimal-pad"
-              />
-              <View style={styles.addButtonRow}>
-                <TouchableOpacity 
-                  style={[styles.formButton, styles.cancelFormButton]} 
-                  onPress={() => {
-                    setShowAddForm(false);
-                    setNewCategoryName('');
-                    setNewCategoryLimit('');
-                  }}
-                >
-                  <Text style={styles.cancelFormButtonText}>Cancel</Text>
-                </TouchableOpacity>
-                <TouchableOpacity 
-                  style={[styles.formButton, styles.saveFormButton]} 
-                  onPress={handleAddCategory}
-                >
-                  <Text style={styles.saveFormButtonText}>Add Category</Text>
-                </TouchableOpacity>
-              </View>
-            </View>
-          )}
 
           {sortedCategories.length > 0 ? (
             <>
@@ -197,6 +149,12 @@ export default function FinancialInfoScreen() {
 
         <View style={styles.bottomPadding} />
       </ScrollView>
+
+      <EnterVEModal
+        visible={showVEModal}
+        onClose={() => setShowVEModal(false)}
+        onSubmit={handleAddCategory}
+      />
     </PageView>
   );
 }
@@ -261,58 +219,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     marginTop: 8,
     textAlign: 'center',
-  },
-  addForm: {
-    backgroundColor: Colors.dark3,
-    padding: 16,
-    borderRadius: 12,
-    marginBottom: 16,
-    gap: 12,
-  },
-  addInput: {
-    backgroundColor: Colors.background,
-    color: Colors.text,
-    padding: 12,
-    borderRadius: 8,
-    fontSize: 16,
-    borderWidth: 1,
-    borderColor: Colors.tint,
-  },
-  addButtonRow: {
-    flexDirection: 'row',
-    gap: 8,
-  },
-  formButton: {
-    flex: 1,
-    padding: 12,
-    borderRadius: 8,
-    alignItems: 'center',
-  },
-  cancelFormButton: {
-    backgroundColor: Colors.dark4,
-  },
-  saveFormButton: {
-    backgroundColor: Colors.buttonGreen,
-  },
-  cancelFormButtonText: {
-    color: Colors.textSecondary,
-    fontWeight: '500',
-  },
-  saveFormButtonText: {
-    color: '#fff',
-    fontWeight: '600',
-  },
-  budgetSummary: {
-    backgroundColor: Colors.dark4,
-    padding: 12,
-    borderRadius: 8,
-    marginTop: 8,
-    alignItems: 'center',
-  },
-  budgetSummaryText: {
-    color: Colors.textSecondary,
-    fontSize: 14,
-    fontWeight: '500',
   },
   emptyState: {
     color: Colors.textTertiary,
