@@ -1,5 +1,6 @@
 import { Colors } from "@/constants/Colors";
-import { StyleSheet, Text, type TextProps } from "react-native";
+import React from "react";
+import { StyleSheet, Text, TextProps, TextStyle } from "react-native";
 
 export type ThemedTextProps = TextProps & {
   type?: "default" | "title" | "defaultSemiBold" | "subtitle" | "link";
@@ -10,22 +11,30 @@ export function ThemedText({
   type = "default",
   ...rest
 }: ThemedTextProps) {
+  // pick base style for this type
+  const base = styles[type];
+
+  // flatten base + any user style so we can read fontSize/lineHeight
+  const flat = StyleSheet.flatten([base, style]) as TextStyle;
+
+  // determine fontSize (fallback to default if absent)
+  const fontSize = flat.fontSize ?? styles.default.fontSize!;
+
+  // compute a lineHeight if none supplied (1.3× gives extra room)
+  const lineHeight = flat.lineHeight ?? Math.round(fontSize * 1.3);
+
+  // vertical padding to center the text within that lineHeight
+  const paddingVertical = Math.round((lineHeight - fontSize) / 2);
+
   return (
     <Text
-      style={[
-        type === "default" ? styles.default : undefined,
-        type === "title" ? styles.title : undefined,
-        type === "defaultSemiBold" ? styles.defaultSemiBold : undefined,
-        type === "subtitle" ? styles.subtitle : undefined,
-        type === "link" ? styles.link : undefined,
-        style,
-      ]}
       {...rest}
+      style={[base, style, { lineHeight, paddingVertical }]}
     />
   );
 }
 
-const styles = StyleSheet.create({
+const styles = StyleSheet.create<Record<ThemedTextProps["type"], TextStyle>>({
   default: {
     fontSize: 16,
     lineHeight: 24,
@@ -40,17 +49,18 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 32,
     fontWeight: "bold",
-    lineHeight: 32,
     color: Colors.text,
+    // no static lineHeight here
   },
   subtitle: {
     fontSize: 20,
     fontWeight: "bold",
     color: Colors.textSecondary,
+    // no static lineHeight here
   },
   link: {
-    lineHeight: 30,
     fontSize: 16,
+    lineHeight: 30,
     color: "#0a7ea4",
   },
 });

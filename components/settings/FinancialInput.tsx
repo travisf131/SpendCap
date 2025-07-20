@@ -12,15 +12,17 @@ interface Props {
   valueColor?: string;
 }
 
-export default function FinancialInput({ title, value, onSave, placeholder, valueColor }: Props) {
+export default function FinancialInput({ title, value, onSave, placeholder, valueColor = Colors.text }: Props) {
   const [isEditing, setIsEditing] = useState(false);
   const [inputValue, setInputValue] = useState(value.toString());
   const { formatAmount } = useCurrency();
 
   // Sync prop changes to internal state
   useEffect(() => {
-    setInputValue(value.toString());
-  }, [value]);
+    if (!isEditing) {
+      setInputValue(value.toString());
+    }
+  }, [value, isEditing]);
 
   const handleSave = () => {
     const parsedValue = parseFloat(inputValue) || 0;
@@ -66,7 +68,10 @@ export default function FinancialInput({ title, value, onSave, placeholder, valu
   }
 
   return (
-    <TouchableOpacity style={styles.container} onPress={() => setIsEditing(true)}>
+    <TouchableOpacity style={styles.container} onPress={() => {
+      setInputValue(''); // Set to blank when editing starts
+      setIsEditing(true);
+    }}>
       <View style={styles.contentRow}>
         <View style={styles.leftColumn}>
           <Text style={styles.title}>{title}</Text>
