@@ -60,16 +60,18 @@ export function useMonth() {
         });
       });
     } else {
-      // If month exists but has no VEs, populate them from settings
-      if (month && month.variableExpenses.length === 0) {
-        const settings = getSettings();
-        realm.write(() => {
-          // Update income and fixed expenses from settings
-          month!.income = settings.userIncome;
-          month!.fixedExpenses = settings.fixedExpenses;
-          
-          // Populate VEs from settings
-          settings.veCategories.forEach((category) => {
+      // Month exists - always sync income and fixed expenses from settings
+      const settings = getSettings();
+      realm.write(() => {
+        // Always update income and fixed expenses from latest settings
+        month!.income = settings.userIncome;
+        month!.fixedExpenses = settings.fixedExpenses;
+        
+        // Sync VEs from settings - add any missing categories
+        const existingVENames = new Set(month!.variableExpenses.map(ve => ve.name));
+        settings.veCategories.forEach((category) => {
+          // Only add if this category doesn't already exist
+          if (!existingVENames.has(category.name)) {
             const newVE = realm.create(VariableExpense, {
               _id: new ObjectId(),
               name: category.name,
@@ -77,9 +79,9 @@ export function useMonth() {
               spent: 0,
             });
             month!.variableExpenses.push(newVE);
-          });
+          }
         });
-      }
+      });
     }
 
     return month!;
