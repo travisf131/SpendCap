@@ -1,6 +1,7 @@
 export const Colors = {
   text: "#E0E0E0",
-  textSecondary: "#CCCCCC",
+  textPrimary: "#FFFFFF",
+  textSecondary: "#AAAAAA",
   textTertiary: "#999999",
   background: "#121212",
   darkSecondary: "#2A2A2A",
@@ -15,4 +16,5 @@ export const Colors = {
   colorLowFunds: "#FFA133",
   colorCritical: "#D32F2F",
   buttonGreen: "#4CAF50",
+  red: "#D32F2F",
 };

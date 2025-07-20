@@ -1,11 +1,10 @@
 import { Colors } from "@/constants/Colors";
-import { VariableExpense } from "@/realm/models/VariableExpense";
+import { useMonth } from "@/services/month";
 import type {
   MoveMoneyData,
   VariableExpense as VariableExpenseType,
 } from "@/types/types";
 import { sanitizeCurrencyInput } from "@/utils/sanitzeCurrencyInput";
-import { useQuery } from "@realm/react";
 import React, { useEffect, useRef, useState } from "react";
 import {
   Dimensions,
@@ -41,7 +40,12 @@ export default function MoveMoneyModal({
   onSubmit,
   from,
 }: Props) {
-  const available = useQuery(VariableExpense).filtered("spent < limit");
+  const { getOrCreateCurrentMonth } = useMonth();
+  const currentMonth = getOrCreateCurrentMonth();
+  
+  // Get only VEs from current month that have available space (spent < limit)
+  const available = currentMonth.variableExpenses.filter(ve => ve.spent < ve.limit);
+  
   const offset = useSharedValue(-CARD_HEIGHT);
   const amountToMoveRef = useRef<TextInput>(null);
   const [amountToMove, setAmountToMove] = useState<string>("");
@@ -129,7 +133,7 @@ export default function MoveMoneyModal({
         {showToOptions && (
           <FlatList
             data={available}
-            keyExtractor={(item) => item._id}
+            keyExtractor={(item) => item._id.toString()}
             style={styles.list}
             renderItem={({ item }) => {
               const remaining = item.limit - item.spent;

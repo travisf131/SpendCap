@@ -45,7 +45,6 @@ export default function TabLayout() {
           tabBarIconStyle: { marginTop: 5 },
         }}
       />
-
       <Tabs.Screen
         name="settings"
         options={{
@@ -58,4 +57,4 @@ export default function TabLayout() {
       />
     </Tabs>
   );
-}
+} 

@@ -1,24 +1,23 @@
 import { Colors } from "@/constants/Colors";
-import { VariableExpense } from "@/realm/models/VariableExpense";
+import { useMonth } from "@/services/month";
 import type {
-  MoveMoneyData,
-  VariableExpense as VariableExpenseType,
+    MoveMoneyData,
+    VariableExpense as VariableExpenseType,
 } from "@/types/types";
-import { useQuery } from "@realm/react";
 import React, { useEffect } from "react";
 import {
-  Dimensions,
-  FlatList,
-  Modal,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
+    Dimensions,
+    FlatList,
+    Modal,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View,
 } from "react-native";
 import Animated, {
-  useAnimatedStyle,
-  useSharedValue,
-  withTiming,
+    useAnimatedStyle,
+    useSharedValue,
+    withTiming,
 } from "react-native-reanimated";
 import RemainingBar from "../RemainingBar";
 
@@ -40,7 +39,12 @@ export default function MoneyOverLimitModal({
   amountToMove,
   sourceExpense,
 }: Props) {
-  const available = useQuery(VariableExpense).filtered("spent < limit");
+  const { getOrCreateCurrentMonth } = useMonth();
+  const currentMonth = getOrCreateCurrentMonth();
+  
+  // Get only VEs from current month that have available space (spent < limit)
+  const available = currentMonth.variableExpenses.filter(ve => ve.spent < ve.limit);
+  
   const offset = useSharedValue(-CARD_HEIGHT);
 
   useEffect(() => {
@@ -74,15 +78,15 @@ export default function MoneyOverLimitModal({
       />
       <Animated.View style={[styles.card, animatedStyle]}>
         <Text style={styles.title}>
-          {`You've gone $${amountToMove} over your budget for ${sourceExpense.name}.`}
+          {`You went over budget by $${amountToMove}.`}
         </Text>
         <Text style={styles.subtitle}>
-          Where would you like to take that from?
+          {`Which category would you like to pull $${amountToMove} from?`}
         </Text>
 
         <FlatList
           data={available}
-          keyExtractor={(item) => item._id}
+          keyExtractor={(item) => item._id.toString()}
           style={styles.list}
           renderItem={({ item }) => {
             const remaining = item.limit - item.spent;

@@ -9,19 +9,18 @@ export const VariableExpenseSchema = {
   primaryKey: "_id",
 };
 
-export const Month = {
+export const MonthSchema = {
   name: "Month",
   properties: {
-    _id: "objectId",
-    monthId: "string", // e.g. 2025-07
+    monthId: "string", // e.g. "2025-07" - primary key
     income: "double",
     fixedExpenses: "double",
-    savingsGoal: "number",
+    savingsGoal: "double",
     notes: "string",
     variableExpenses: {
       type: "list",
       objectType: "VariableExpense",
     },
   },
-  primaryKey: "_id",
+  primaryKey: "monthId",
 };

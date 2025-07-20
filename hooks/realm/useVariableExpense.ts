@@ -1,6 +1,7 @@
 // hooks/useVariableExpense.ts
+import { VariableExpense } from "@/realm/models/VariableExpense";
+import { useMonth } from "@/services/month";
 import { MoveMoneyData } from "@/types/types";
-import { getMonthIdString } from "@/utils/dates";
 import { useRealm } from "@realm/react";
 import Realm from "realm";
 const { ObjectId } = Realm.BSON;
@@ -8,25 +9,25 @@ type ObjID = Realm.BSON.ObjectId;
 
 export function useVariableExpense() {
   const realm = useRealm();
+  const { getOrCreateCurrentMonth } = useMonth();
 
   const create = ({ name, limit }: { name: string; limit: number }) => {
-    const now = new Date();
-    const monthId = getMonthIdString(); // e.g., "2024-10"
+    const month = getOrCreateCurrentMonth();
 
-    let month = realm.objectForPrimaryKey("Month", monthId);
+    realm.write(() => {
+      const newExpense = realm.create(VariableExpense, {
+        _id: new ObjectId(),
+        name,
+        limit,
+        spent: 0,
+      });
 
-    const newExpense = realm.create("VariableExpense", {
-      _id: new ObjectId(),
-      name,
-      limit,
-      spent: 0,
+      month.variableExpenses.push(newExpense);
     });
-
-    month?.variableExpenses.push(newExpense);
   };
 
   const renameExpense = (id: ObjID, newName: string) => {
-    const obj = realm.objectForPrimaryKey("VariableExpense", id);
+    const obj = realm.objectForPrimaryKey(VariableExpense, id);
     if (!obj) return;
     realm.write(() => {
       obj.name = newName;
@@ -34,7 +35,7 @@ export function useVariableExpense() {
   };
 
   const changeLimit = (id: ObjID, newLimit: number) => {
-    const obj = realm.objectForPrimaryKey("VariableExpense", id);
+    const obj = realm.objectForPrimaryKey(VariableExpense, id);
     if (!obj) return;
     realm.write(() => {
       obj.limit = newLimit;
@@ -42,7 +43,7 @@ export function useVariableExpense() {
   };
 
   const addSpend = (id: ObjID, amount: number) => {
-    const obj = realm.objectForPrimaryKey("VariableExpense", id);
+    const obj = realm.objectForPrimaryKey(VariableExpense, id);
     if (!obj) return;
     realm.write(() => {
       obj.spent += amount;
@@ -50,7 +51,7 @@ export function useVariableExpense() {
   };
 
   const remove = (id: ObjID) => {
-    const obj = realm.objectForPrimaryKey("VariableExpense", id);
+    const obj = realm.objectForPrimaryKey(VariableExpense, id);
     if (!obj) return;
     realm.write(() => {
       realm.delete(obj);
@@ -58,8 +59,8 @@ export function useVariableExpense() {
   };
 
   const handleMoneyOverLimit = (data: MoveMoneyData) => {
-    const from = realm.objectForPrimaryKey("VariableExpense", data.from);
-    const to = realm.objectForPrimaryKey("VariableExpense", data.to);
+    const from = realm.objectForPrimaryKey(VariableExpense, data.from);
+    const to = realm.objectForPrimaryKey(VariableExpense, data.to);
     if (!from || !to) return;
 
     realm.write(() => {
@@ -69,8 +70,8 @@ export function useVariableExpense() {
   };
 
   const transfer = (data: MoveMoneyData) => {
-    const from = realm.objectForPrimaryKey("VariableExpense", data.from);
-    const to = realm.objectForPrimaryKey("VariableExpense", data.to);
+    const from = realm.objectForPrimaryKey(VariableExpense, data.from);
+    const to = realm.objectForPrimaryKey(VariableExpense, data.to);
     if (!from || !to) return;
 
     realm.write(() => {
