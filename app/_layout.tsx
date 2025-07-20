@@ -1,10 +1,10 @@
 import { RealmProvider } from "@realm/react";
 import { useFonts } from "expo-font";
-import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { KeyboardProvider } from "react-native-keyboard-controller";
 import "react-native-reanimated";
 
+import AppWrapper from "@/components/AppWrapper";
 import Snackbar from "@/components/Snackbar";
 import { Colors } from "@/constants/Colors";
 import { SnackbarProvider } from "@/hooks/useSnackbar";
@@ -31,11 +31,7 @@ export default function RootLayout() {
             path="myrealm.realm"
             schemaVersion={2}
           >
-            <Stack>
-              <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-              <Stack.Screen name="settings" options={{ headerShown: false }} />
-              <Stack.Screen name="+not-found" />
-            </Stack>
+            <AppWrapper />
             <StatusBar style="auto" />
             <Snackbar />
           </RealmProvider>
