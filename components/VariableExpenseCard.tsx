@@ -54,7 +54,7 @@ export default function VariableExpenseCard({
           )}
 
           {/* No money left; budget exceeded */}
-          {limitReached && <Text>{`$${remaining} left`}</Text>}
+          {limitReached && <Text>{`$${Math.abs(remaining)} ${remaining < 0 ? 'over' : 'left'}`}</Text>}
         </Text>
       </View>
 
@@ -87,7 +87,7 @@ const styles = StyleSheet.create({
     opacity: 0.6,
   },
   limitReachedStyles: {
-    opacity: 0.5,
+    opacity: 0.65,
   },
   title: {
     fontSize: 16,

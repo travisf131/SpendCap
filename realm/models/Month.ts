@@ -6,6 +6,7 @@ export class Month extends Realm.Object<Month> {
   income!: number;
   fixedExpenses!: number;
   savingsGoal!: number;
+  monthlySavings!: number; // Actual savings for this month, can be reduced if over budget
   notes!: string;
   variableExpenses!: Realm.List<VariableExpense>;
 
@@ -17,6 +18,7 @@ export class Month extends Realm.Object<Month> {
       income: "double",
       fixedExpenses: "double", 
       savingsGoal: "double",
+      monthlySavings: "double",
       notes: "string",
       variableExpenses: {
         type: "list",

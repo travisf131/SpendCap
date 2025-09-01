@@ -147,6 +147,12 @@ export function useSettings() {
     saveSettings(DEFAULT_SETTINGS);
   }, [saveSettings]);
 
+  const resetOnboarding = useCallback(() => {
+    const settings = getSettings();
+    const updatedSettings = { ...settings, hasCompletedOnboarding: false };
+    saveSettings(updatedSettings);
+  }, [getSettings, saveSettings]);
+
   // Get calculated values
   const getProjectedSavings = useCallback(() => {
     const settings = getSettings();
@@ -168,6 +174,7 @@ export function useSettings() {
     getLastMonthId,
     completeOnboarding,
     resetSettings,
+    resetOnboarding,
     getProjectedSavings,
   };
 } 

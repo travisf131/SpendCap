@@ -86,17 +86,20 @@ export default function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
               <ThemedText style={titleText}>Welcome to SpendCap!</ThemedText>
             </View>
             <BudgetEnvelopeAnimation />
-            <View style={philosophyContainer}>
+            <ScrollView style={philosophyContainer}>
               <ThemedText style={bodyText}>
-                SpendCap uses the proven envelope budgeting system to help you take control of your spending.
+                SpendCap was built in response to the unecessary complexity of traditional budgeting apps. Our goal was to make budgeting as simple as possible.
               </ThemedText>
               <ThemedText style={bodyText}>
-                Instead of tracking every single expense, we focus on what matters most: your variable expenses - the spending categories where you have control.
+                Instead of tracking every single expense, and trying to do everything under the sun, we focus only on what matters most: tracking your variable expenses.
               </ThemedText>
               <ThemedText style={bodyText}>
-                By setting limits for these categories and tracking only what you spend, you&apos;ll naturally save more without the complexity of traditional budgeting apps.
+                By setting limits for these categories and staying within them, you&apos;ll naturally save more without feeling like you&apos;re managing a complex financial software.
               </ThemedText>
-            </View>
+              <ThemedText style={bodyText}>
+                This approach won&apos;t be for everyone, but if you want a dead simple way to stay within your intended spending limits, this is for you.
+              </ThemedText>
+            </ScrollView>
           </View>
           <TouchableOpacity style={fullWidthButton} onPress={handleNext}>
             <ThemedText style={buttonText}>Get Started</ThemedText>
@@ -183,6 +186,7 @@ export default function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
                   category={category}
                   onUpdate={(id, updates) => updateVECategoryLocal(id, updates)}
                   onDelete={(id) => deleteVECategoryLocal(id)}
+                  isOnboarding={true}
                 />
               ))}  
             </ScrollView>
@@ -307,7 +311,7 @@ const bodyText: TextStyle = {
 };
 
 const philosophyContainer: ViewStyle = {
-    marginTop: 10,
+    marginTop: 0,
   paddingHorizontal: 10,
 };
 

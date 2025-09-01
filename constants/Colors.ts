@@ -17,4 +17,6 @@ export const Colors = {
   colorCritical: "#D32F2F",
   buttonGreen: "#4CAF50",
   red: "#D32F2F",
+  softGreen: "#4CAF50D0",
+  softRed: "#D32F2FD0",
 };

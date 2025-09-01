@@ -21,46 +21,46 @@ const settingsMenuItems = [
     icon: 'settings',
     route: '/settings/preferences'
   },
+  // {
+  //   id: 'notifications',
+  //   title: 'Notifications',
+  //   subtitle: 'Spending alerts and reminders',
+  //   icon: 'notifications',
+  //   route: '/settings/notifications'
+  // },
+  // {
+  //   id: 'export',
+  //   title: 'Export Data',
+  //   subtitle: 'Backup and export your spending data',
+  //   icon: 'file-download',
+  //   route: '/settings/export'
+  // },
   {
-    id: 'notifications',
-    title: 'Notifications',
-    subtitle: 'Spending alerts and reminders',
-    icon: 'notifications',
-    route: '/settings/notifications'
+    id: 'explained',
+    title: 'SpendCap Explained',
+    subtitle: 'Learn about the budgeting system behind SpendCap',
+    icon: 'school',
+    route: '/settings/explained'
   },
-  {
-    id: 'export',
-    title: 'Export Data',
-    subtitle: 'Backup and export your spending data',
-    icon: 'file-download',
-    route: '/settings/export'
-  },
-  {
-    id: 'about',
-    title: 'About',
-    subtitle: 'App version and support',
-    icon: 'info',
-    route: '/settings/about'
-  }
+  // {
+  //   id: 'about',
+  //   title: 'About',
+  //   subtitle: 'App version and support',
+  //   icon: 'info',
+  //   route: '/settings/about'
+  // }
 ];
 
 export default function SettingsScreen() {
   const handleMenuPress = (route: string) => {
-    if (route === '/settings/financial') {
-      router.push('/settings/financial' as any);
-    } else if (route === '/settings/preferences') {
-      router.push('/settings/preferences' as any);
-    } else {
-      // For now, just show that these are coming soon
-      console.log(`Navigate to: ${route} - Coming soon!`);
-    }
+    router.push(route as any);
   };
 
 
   return (
     <PageView>
       <ScrollView showsVerticalScrollIndicator={false}>
-        <ThemedText type="title" style={styles.title}>Settings</ThemedText>
+        <ThemedText type="title" style={styles.title}>Menu</ThemedText>
 
         <View style={styles.menuContainer}>
           {settingsMenuItems.map((item) => (
@@ -78,7 +78,9 @@ export default function SettingsScreen() {
                   <ThemedText style={styles.menuSubtitle}>{item.subtitle}</ThemedText>
                 </View>
               </View>
-              <Icon name="chevron-right" size={20} color={Colors.textTertiary} />
+              <View style={styles.arrowContainer}>
+                <Icon name="chevron-right" size={20} color={Colors.textTertiary} />
+              </View>
             </TouchableOpacity>
           ))}
         </View>
@@ -93,14 +95,14 @@ export default function SettingsScreen() {
 
 const styles = StyleSheet.create({
   title: {
-    marginBottom: 24,
+    marginBottom: 10,
   },
   menuContainer: {
     gap: 2,
   },
   menuItem: {
     backgroundColor: Colors.dark3,
-    padding: 16,
+    padding: 8,
     borderRadius: 12,
     flexDirection: 'row',
     alignItems: 'center',
@@ -112,6 +114,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     flex: 1,
   },
+  arrowContainer: {
+    marginLeft: 7,
+  },
   iconContainer: {
     width: 30,
     height: 40,
@@ -122,15 +127,18 @@ const styles = StyleSheet.create({
   },
   textContainer: {
     flex: 1,
+    marginLeft: 0,
+    marginRight: 2,
   },
   menuTitle: {
     fontSize: 16,
     color: Colors.text,
     fontWeight: '600',
-    marginBottom: 2,
+    marginBottom: -5,
   },
   menuSubtitle: {
     fontSize: 14,
+    lineHeight: 20,
     color: Colors.textSecondary,
   },
   bottomPadding: {

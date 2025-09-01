@@ -23,7 +23,7 @@ import { TextStyle, TouchableOpacity, View, ViewStyle } from "react-native";
 export default function HomeScreen() {
   const { getCurrentMonthWithTransition } = useMonth();
   const { showSnackbar } = useSnackbar();
-  const { create, addSpend, remove, handleMoneyOverLimit, transfer } =
+  const { create, addSpend, remove, handleMoneyOverLimit, transfer, deductFromMonthlySavings } =
     useVariableExpense();
 
   const { getSettings } = useSettings();
@@ -43,6 +43,9 @@ export default function HomeScreen() {
     amountToMove: null,
     sourceExpense: null,
   });
+  
+  // Track previous overage amounts to only charge incremental amounts
+  const [previousOverages, setPreviousOverages] = useState<Map<string, number>>(new Map());
   const [expenseToEdit, setExpenseToEdit] =
     useState<VariableExpenseType | null>();
 
@@ -56,21 +59,49 @@ export default function HomeScreen() {
     if (transitioned) {
       const monthName = getMonthYearFromId(currentMonth.monthId);
       showSnackbar(`Welcome to ${monthName}! New month created with your settings.`, 'success');
+      // Reset overage tracking for new month
+      setPreviousOverages(new Map());
     }
   }, [transitioned, showSnackbar]);
 
-  const handleOverLimit = (amountOver: number) => {
-    // take the amount exceeded away from another category
-    setOverLimit({
-      showModal: true,
-      amountToMove: amountOver,
-      sourceExpense: expenseToEdit || undefined,
-    });
+  const handleOverLimit = (totalAmountOver: number) => {
+    if (!expenseToEdit) return;
+    
+    // Get the previous overage for this expense
+    const previousOverage = previousOverages.get(expenseToEdit._id.toString()) || 0;
+    
+    // Calculate only the NEW overage amount
+    const incrementalOverage = totalAmountOver - previousOverage;
+    
+    if (incrementalOverage > 0) {
+      // Update the previous overage tracker
+      const newOverages = new Map(previousOverages);
+      newOverages.set(expenseToEdit._id.toString(), totalAmountOver);
+      setPreviousOverages(newOverages);
+      
+      // Check if there are any VEs with available funds
+      const availableVEs = currentMonth.variableExpenses.filter(ve => ve.spent < ve.limit);
+      
+      if (availableVEs.length === 0) {
+        // No VEs available - automatically deduct from monthly savings
+        deductFromMonthlySavings(expenseToEdit._id, incrementalOverage);
+        showSnackbar(`${formatAmount(incrementalOverage)} deducted from monthly savings`, 'error');
+      } else {
+        // VEs available - show modal to choose
+        setOverLimit({
+          showModal: true,
+          amountToMove: incrementalOverage,
+          sourceExpense: expenseToEdit,
+        });
+      }
+    }
   };
 
   // Calculate projected savings for current month
   const totalVEBudget = expenses.reduce((sum, ve) => sum + ve.limit, 0);
   const projectedSavings = currentMonth.income - currentMonth.fixedExpenses - totalVEBudget;
+  const actualSavings = currentMonth.monthlySavings;
+  const overBudget = actualSavings < projectedSavings;
 
   return (
     <PageView>
@@ -81,15 +112,27 @@ export default function HomeScreen() {
       {expensesSorted.length > 0 && currentMonth.income > 0 && currentMonth.fixedExpenses > 0 ? (
         <>
           {/* Projected Savings Display */}
-          <View style={savingsContainer}>
-            <ThemedText style={savingsLabel}>Projected Savings:</ThemedText>
-            <ThemedText style={[
-              savingsAmount,
-              projectedSavings < 0 ? negativeSavings : positiveSavings
-            ]}>
-              {formatAmount(projectedSavings)}
+         <View style={savingsContainer}>
+           <ThemedText style={savingsLabel}>
+             {overBudget ? 'Savings:' : 'Projected Savings:'}
+           </ThemedText>
+           <ThemedText style={[
+             savingsAmount,
+             (overBudget ? actualSavings : projectedSavings) < 0 ? negativeSavings : positiveSavings
+           ]}>
+             {formatAmount(overBudget ? actualSavings : projectedSavings)}{overBudget && <ThemedText style={{ fontSize: 13, color: Colors.textSecondary }}>{` / $${projectedSavings}`}</ThemedText>}
+           </ThemedText>
+         </View>
+
+          {overBudget && (
+          <ThemedText style={warningText}>
+            {`⚠️ You're `}
+            <ThemedText style={{ color: 'red' }}>
+              {formatAmount(projectedSavings - actualSavings)}
             </ThemedText>
-          </View>
+            {` over your monthly budget.`}
+          </ThemedText>
+         )}
 
           <FlashList
             data={expensesSorted}
@@ -221,7 +264,7 @@ const savingsLabel: TextStyle = {
 
 const savingsAmount: TextStyle = {
   fontSize: 18,
-  fontWeight: "600",
+  fontWeight: "700",
 };
 
 const positiveSavings: TextStyle = {
@@ -231,3 +274,10 @@ const positiveSavings: TextStyle = {
 const negativeSavings: TextStyle = {
   color: Colors.colorCritical,
 }; 
+
+const warningText: TextStyle = {
+  fontSize: 14,
+  marginTop: 0,
+  marginBottom: 10,
+  textAlign: 'center',
+};

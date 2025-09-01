@@ -229,7 +229,7 @@ export default function BudgetEnvelopeAnimation() {
 }
 
 const container: ViewStyle = {
-  height: 150,
+  height: 130,
   width: '100%',
   justifyContent: 'center',
   alignItems: 'center',

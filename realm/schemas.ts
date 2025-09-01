@@ -16,6 +16,7 @@ export const MonthSchema = {
     income: "double",
     fixedExpenses: "double",
     savingsGoal: "double",
+    monthlySavings: "double",
     notes: "string",
     variableExpenses: {
       type: "list",

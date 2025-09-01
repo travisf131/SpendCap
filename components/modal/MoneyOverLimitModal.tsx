@@ -1,23 +1,24 @@
 import { Colors } from "@/constants/Colors";
+import { useCurrency } from "@/hooks/useCurrency";
 import { useMonth } from "@/services/month";
 import type {
-    MoveMoneyData,
-    VariableExpense as VariableExpenseType,
+  MoveMoneyData,
+  VariableExpense as VariableExpenseType,
 } from "@/types/types";
 import React, { useEffect } from "react";
 import {
-    Dimensions,
-    FlatList,
-    Modal,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
+  Dimensions,
+  FlatList,
+  Modal,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from "react-native";
 import Animated, {
-    useAnimatedStyle,
-    useSharedValue,
-    withTiming,
+  useAnimatedStyle,
+  useSharedValue,
+  withTiming,
 } from "react-native-reanimated";
 import RemainingBar from "../RemainingBar";
 
@@ -40,6 +41,7 @@ export default function MoneyOverLimitModal({
   sourceExpense,
 }: Props) {
   const { getOrCreateCurrentMonth } = useMonth();
+  const { formatAmount } = useCurrency();
   const currentMonth = getOrCreateCurrentMonth();
   
   // Get only VEs from current month that have available space (spent < limit)
@@ -78,10 +80,10 @@ export default function MoneyOverLimitModal({
       />
       <Animated.View style={[styles.card, animatedStyle]}>
         <Text style={styles.title}>
-          {`You went over budget by $${amountToMove}.`}
+          {`You went over budget by ${formatAmount(amountToMove)}.`}
         </Text>
         <Text style={styles.subtitle}>
-          {`Which category would you like to pull $${amountToMove} from?`}
+          {`Which category would you like to pull ${formatAmount(amountToMove)} from?`}
         </Text>
 
         <FlatList
@@ -90,6 +92,7 @@ export default function MoneyOverLimitModal({
           style={styles.list}
           renderItem={({ item }) => {
             const remaining = item.limit - item.spent;
+            
             return (
               <TouchableOpacity
                 style={[styles.item, { backgroundColor: Colors.background }]}
@@ -110,7 +113,9 @@ export default function MoneyOverLimitModal({
                   >
                     {item.name}
                   </Text>
-                  <Text style={styles.itemText}>${remaining} left</Text>
+                  <Text style={styles.itemText}>
+                    {formatAmount(remaining)} left
+                  </Text>
                 </View>
                 <RemainingBar left={remaining} total={item.limit} />
               </TouchableOpacity>

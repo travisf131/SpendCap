@@ -28,7 +28,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="index"
         options={{
-          title: "Overview",
+          title: "Budget",
           tabBarIcon: ({ color }) => (
             <Icon size={28} name="savings" color={color} />
           ),
@@ -38,7 +38,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="analytics"
         options={{
-          title: "Analytics",
+          title: "History",
           tabBarIcon: ({ color }) => (
             <Icon size={28} name="insights" color={color} />
           ),
@@ -48,9 +48,9 @@ export default function TabLayout() {
       <Tabs.Screen
         name="settings"
         options={{
-          title: "Settings",
+          title: "Menu",
           tabBarIcon: ({ color }) => (
-            <Icon size={28} name="settings" color={color} />
+            <Icon size={28} name="menu" color={color} />
           ),
           tabBarIconStyle: { marginTop: 5 },
         }}

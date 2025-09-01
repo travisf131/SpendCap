@@ -1,5 +1,6 @@
 import PageView from "@/components/PageView";
 import { ThemedText } from "@/components/ThemedText";
+import Header from "@/components/generic/Header";
 import EnterVEModal from '@/components/modal/EnterVEModal';
 import FinancialInput from '@/components/settings/FinancialInput';
 import VECategoryItem from '@/components/settings/VECategoryItem';
@@ -8,7 +9,6 @@ import { Colors } from '@/constants/Colors';
 import { useCurrency } from '@/hooks/useCurrency';
 import { useSettings } from '@/hooks/useSettings';
 import { useSnackbar } from '@/hooks/useSnackbar';
-import { router } from 'expo-router';
 import React, { useState } from 'react';
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
@@ -47,19 +47,11 @@ export default function FinancialInfoScreen() {
 
   return (
     <PageView>
+      <Header title="Personal Financial Info" />    
       <ScrollView 
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: 100 }}
+        contentContainerStyle={{ paddingBottom: 0 }}
       >
-        {/* Header with back button */}
-        <View style={styles.header}>
-          <TouchableOpacity onPress={() => router.back()}>
-            <Icon name="arrow-back" size={24} color={Colors.tint} />
-          </TouchableOpacity>
-          <ThemedText type="title" style={styles.title}>Personal Financial Info</ThemedText>
-          <View style={{ width: 24 }} />
-        </View>
-
         {/* Financial Overview */}
         <View style={styles.section}>
           <ThemedText type="subtitle" style={styles.sectionTitle}>

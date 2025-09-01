@@ -44,6 +44,7 @@ export function useMonth() {
           income: settings.userIncome,
           fixedExpenses: settings.fixedExpenses,
           savingsGoal: 0,
+          monthlySavings: Math.max(0, settings.userIncome - settings.fixedExpenses - settings.veCategories.reduce((sum, cat) => sum + cat.defaultLimit, 0)),
           notes: "",
           variableExpenses: [],
         });
@@ -116,6 +117,7 @@ export function useMonth() {
           income: currentMonth?.income || settings.userIncome,
           fixedExpenses: currentMonth?.fixedExpenses || settings.fixedExpenses,
           savingsGoal: currentMonth?.savingsGoal || 0,
+          monthlySavings: Math.max(0, (currentMonth?.income || settings.userIncome) - (currentMonth?.fixedExpenses || settings.fixedExpenses) - settings.veCategories.reduce((sum, cat) => sum + cat.defaultLimit, 0)),
           notes: "",
           variableExpenses: [],
         });
@@ -154,11 +156,33 @@ export function useMonth() {
 
 
 
+  const updateMonthlySavings = (monthId: string) => {
+    const month = realm.objectForPrimaryKey(Month, monthId);
+    if (!month) return;
+
+    realm.write(() => {
+      const totalBudget = month.variableExpenses.reduce((sum, ve) => sum + ve.limit, 0);
+      const totalSpent = month.variableExpenses.reduce((sum, ve) => sum + ve.spent, 0);
+      const projectedSavings = month.income - month.fixedExpenses - totalBudget;
+      
+      // If user has spent over budget, reduce monthlySavings accordingly
+      if (totalSpent > totalBudget) {
+        const overspend = totalSpent - totalBudget;
+        month.monthlySavings = Math.max(0, projectedSavings - overspend);
+      } else {
+        // If under/at budget, monthlySavings is the projected savings plus any unspent budget
+        const unspentBudget = totalBudget - totalSpent;
+        month.monthlySavings = projectedSavings + unspentBudget;
+      }
+    });
+  };
+
   return {
     getOrCreateCurrentMonth,
     getCurrentMonthWithTransition,
     getOrCreateNextMonth,
     getPreviousMonth,
     getAllMonths,
+    updateMonthlySavings,
   };
 }

@@ -29,7 +29,34 @@ export default function RootLayout() {
           <RealmProvider
             schema={[VariableExpense, Month]}
             path="myrealm.realm"
-            schemaVersion={2}
+            schemaVersion={3}
+            onMigration={(oldRealm, newRealm) => {
+              // Migration from schema version 2 to 3
+              if (oldRealm.schemaVersion < 3) {
+                const oldMonths = oldRealm.objects('Month');
+                const newMonths = newRealm.objects('Month');
+                
+                for (let i = 0; i < oldMonths.length; i++) {
+                  const oldMonth = oldMonths[i];
+                  const newMonth = newMonths[i];
+                  
+                  // Calculate initial monthlySavings value based on existing data
+                  const totalBudget = oldMonth.variableExpenses.reduce((sum: number, ve: any) => sum + ve.limit, 0);
+                  const totalSpent = oldMonth.variableExpenses.reduce((sum: number, ve: any) => sum + ve.spent, 0);
+                  const projectedSavings = oldMonth.income - oldMonth.fixedExpenses - totalBudget;
+                  
+                  // If user has spent over budget, reduce monthlySavings accordingly
+                  if (totalSpent > totalBudget) {
+                    const overspend = totalSpent - totalBudget;
+                    newMonth.monthlySavings = Math.max(0, projectedSavings - overspend);
+                  } else {
+                    // If under/at budget, monthlySavings is the projected savings plus any unspent budget
+                    const unspentBudget = totalBudget - totalSpent;
+                    newMonth.monthlySavings = projectedSavings + unspentBudget;
+                  }
+                }
+              }
+            }}
           >
             <AppWrapper />
             <StatusBar style="auto" />

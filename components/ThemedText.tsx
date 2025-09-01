@@ -38,13 +38,14 @@ const styles = StyleSheet.create<Record<ThemedTextProps["type"], TextStyle>>({
   default: {
     fontSize: 16,
     lineHeight: 24,
-    color: Colors.textSecondary,
+    color: Colors.text,
+    // fontFamily: "Trebuchet MS", // eventually change all text to this font
   },
   defaultSemiBold: {
     fontSize: 16,
     lineHeight: 24,
     fontWeight: "600",
-    color: Colors.textSecondary,
+    color: Colors.text,
   },
   title: {
     fontSize: 32,
@@ -55,7 +56,7 @@ const styles = StyleSheet.create<Record<ThemedTextProps["type"], TextStyle>>({
   subtitle: {
     fontSize: 20,
     fontWeight: "bold",
-    color: Colors.textSecondary,
+    color: Colors.text,
     // no static lineHeight here
   },
   link: {

@@ -10,9 +10,10 @@ interface Props {
   category: VariableExpenseCategory;
   onUpdate: (id: string, updates: Partial<VariableExpenseCategory>) => void;
   onDelete: (id: string) => void;
+  isOnboarding?: boolean;
 }
 
-export default function VECategoryItem({ category, onUpdate, onDelete }: Props) {
+export default function VECategoryItem({ category, onUpdate, onDelete, isOnboarding }: Props) {
   const [isEditing, setIsEditing] = useState(false);
   const [editName, setEditName] = useState(category.name);
   const [editLimit, setEditLimit] = useState(category.defaultLimit.toString());
