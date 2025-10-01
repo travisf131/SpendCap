@@ -50,7 +50,64 @@ export default function HomeScreen() {
     useState<VariableExpenseType | null>();
 
   // Get current month with automatic transition detection
-  const { month: currentMonth, transitioned } = getCurrentMonthWithTransition();
+  const [monthData, setMonthData] = useState<{
+    month: any;
+    transitioned: boolean;
+  } | null>(null);
+  const [monthError, setMonthError] = useState<string | null>(null);
+
+  useEffect(() => {
+    try {
+      const data = getCurrentMonthWithTransition();
+      setMonthData(data);
+      setMonthError(null);
+    } catch (error) {
+      console.error('Error getting current month:', error);
+      setMonthError('Failed to load month data');
+      showSnackbar('Error loading data. Please restart the app.', 'error');
+    }
+  }, [getCurrentMonthWithTransition, showSnackbar]);
+
+  if (monthError || !monthData) {
+    return (
+      <PageView>
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+          <ThemedText style={{ color: Colors.colorCritical, textAlign: 'center', marginBottom: 16 }}>
+            {monthError || 'Loading...'}
+          </ThemedText>
+          {monthError && (
+            <TouchableOpacity
+              onPress={() => {
+                // Try to reload the app - different approaches for different environments
+                if (typeof window !== 'undefined' && window.location?.reload) {
+                  window.location.reload();
+                } else {
+                  try {
+                    const { NativeModules } = require('react-native');
+                    NativeModules?.DevSettings?.reload?.();
+                  } catch (e) {
+                    console.log('Could not reload app automatically');
+                  }
+                }
+              }}
+              style={{
+                backgroundColor: Colors.dark3,
+                paddingHorizontal: 20,
+                paddingVertical: 12,
+                borderRadius: 8,
+                borderWidth: 1,
+                borderColor: Colors.buttonGreen,
+              }}
+            >
+              <ThemedText style={{ color: Colors.text }}>Restart App</ThemedText>
+            </TouchableOpacity>
+          )}
+        </View>
+      </PageView>
+    );
+  }
+
+  const { month: currentMonth, transitioned } = monthData;
   const expenses = currentMonth.variableExpenses;
   const expensesSorted = sortedExpenses({ expenses: [...expenses] });
 
@@ -80,7 +137,7 @@ export default function HomeScreen() {
       setPreviousOverages(newOverages);
       
       // Check if there are any VEs with available funds
-      const availableVEs = currentMonth.variableExpenses.filter(ve => ve.spent < ve.limit);
+      const availableVEs = currentMonth.variableExpenses.filter((ve: any) => ve.spent < ve.limit);
       
       if (availableVEs.length === 0) {
         // No VEs available - automatically deduct from monthly savings
@@ -98,7 +155,7 @@ export default function HomeScreen() {
   };
 
   // Calculate projected savings for current month
-  const totalVEBudget = expenses.reduce((sum, ve) => sum + ve.limit, 0);
+  const totalVEBudget = expenses.reduce((sum: number, ve: any) => sum + ve.limit, 0);
   const projectedSavings = currentMonth.income - currentMonth.fixedExpenses - totalVEBudget;
   const actualSavings = currentMonth.monthlySavings;
   const overBudget = actualSavings < projectedSavings;

@@ -1,24 +1,18 @@
 
 import { DEFAULT_SETTINGS, GlobalSettings, VariableExpenseCategory } from '@/types/settings';
-import { useCallback } from 'react';
+import { useCallback, useMemo } from 'react';
 import { MMKV } from 'react-native-mmkv';
 
 const SETTINGS_KEY = 'global_settings';
 
-// Lazy initialization - only create MMKV when first needed
-let storage: MMKV | null = null;
-const getStorage = (): MMKV => {
-  if (!storage) {
-    storage = new MMKV();
-  }
-  return storage;
-};
-
 export function useSettings() {
+  // Proper MMKV initialization instead of lazy loading
+  const storage = useMemo(() => new MMKV(), []);
+
   // Get settings from MMKV
   const getSettings = useCallback((): GlobalSettings => {
     try {
-      const settingsJson = getStorage().getString(SETTINGS_KEY);
+      const settingsJson = storage.getString(SETTINGS_KEY);
       if (settingsJson) {
         const parsed = JSON.parse(settingsJson);
         
@@ -31,7 +25,7 @@ export function useSettings() {
           delete migratedSettings.veTemplates;
           
           // Save the migrated settings immediately
-          getStorage().set(SETTINGS_KEY, JSON.stringify(migratedSettings));
+          storage.set(SETTINGS_KEY, JSON.stringify(migratedSettings));
           return migratedSettings;
         }
         
@@ -51,16 +45,16 @@ export function useSettings() {
       console.warn('Failed to load settings:', error);
     }
     return DEFAULT_SETTINGS;
-  }, []);
+  }, [storage]);
 
   // Save settings to MMKV
   const saveSettings = useCallback((settings: GlobalSettings) => {
     try {
-      getStorage().set(SETTINGS_KEY, JSON.stringify(settings));
+      storage.set(SETTINGS_KEY, JSON.stringify(settings));
     } catch (error) {
       console.error('Failed to save settings:', error);
     }
-  }, []);
+  }, [storage]);
 
   // Update income
   const updateIncome = useCallback((income: number) => {
